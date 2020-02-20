@@ -2,7 +2,7 @@
 
 imageExtensions=(png jpg gif)				#tif Notsupported
 videoExtensions=(mp4 webm ogg)				#
-imagesDirectories=(imaGes)                  #directoris and names should not contain spaces
+imagesDirectories=(images)                  #directoris and names should not contain spaces
 videosDirectories=(videos)                  #
 
 function toLowerCase() #USE:=$(toLowerCase "$str")
