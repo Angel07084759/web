@@ -24,32 +24,30 @@ then
 	echo "There are changes!";
 	read -p "Enter a commit message: " userInput
 	
-	for fileUnTracked in "${gitFilesUnTracked[@]}"
+	for fileTracked in "${gitFilesTracked[@]}"
 	do
-		for fileTracked in "${gitFilesTracked[@]}"
+		echo "$fileTracked" ###
+		for fileUnTracked in "${gitFilesUnTracked[@]}"
 		do
-			echo "$fileTracked" ###
-			if [[ "$(toLowerCase "$fileTracked")" != "$(toLowerCase "$fileUnTracked")" ]]
+			if [[ "$(toLowerCase "$fileTracked")" == "$(toLowerCase "$fileUnTracked")" ]]
 			then
-				gitFilesUnTracked=( ${gitFilesTracked[@]/"$fileTracked"} )
-				
+				echo "$fileTracked ==[${#gitFilesTracked[@]}, ${#gitFilesUnTracked[@]}]== $fileUnTracked"
+				#gitFilesUnTracked=( ${gitFilesUnTracked[@]/"$fileUnTracked"} )
+				[[ $(git rm --cached "$fileTracked") ]] || [[ $(git rm -f --cached "$fileTracked") ]]
 				#git add "$fileUnTracked"
 				#read -p "Press [Enter]"
-			else
-				echo "$fileTracked ==[${#gitFilesTracked[@]}, ${#gitFilesUnTracked[@]}]== $fileUnTracked"
-				[[ $(git rm --cached "$fileTracked") ]] || [[ $(git rm -f --cached "$fileTracked") ]]
 				break
 			fi
 		done
-	done
+	done 
 	#read -p "${#gitFilesTracked[@]} ========== ${#gitFilesUnTracked[@]}" #####-----------
 	#git ls-files ###
 	### Checking for files renaming (case sensitive) ENDS
 	
 	echo $date>"date"
 	git add .
-	#git commit -m "`date '+%Y-%m-%d %H:%M:%S'` => $userInput"
-	#git push
+	git commit -m "`date '+%Y-%m-%d %H:%M:%S'` => $userInput"
+	git push
 	echo
 else
 	echo "There are NO changes!";
