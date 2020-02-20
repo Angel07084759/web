@@ -24,18 +24,20 @@ then
 	echo "There are changes!";
 	read -p "Enter a commit message: " userInput
 	
-	for fileTracked in "${gitFilesTracked[@]}"
+	for fileUnTracked in "${gitFilesUnTracked[@]}"
 	do
-		echo "$fileTracked" ###
-		for fileUnTracked in "${gitFilesUnTracked[@]}"
+		for fileTracked in "${gitFilesTracked[@]}"
 		do
-			if [[ "$(toLowerCase "$fileTracked")" == "$(toLowerCase "$fileUnTracked")" ]]
+			echo "$fileTracked" ###
+			if [[ "$(toLowerCase "$fileTracked")" != "$(toLowerCase "$fileUnTracked")" ]]
 			then
+				gitFilesUnTracked=( ${gitFilesTracked[@]/"$fileTracked"} )
+				
+				#git add "$fileUnTracked"
+				#read -p "Press [Enter]"
+			else
 				echo "$fileTracked ==[${#gitFilesTracked[@]}, ${#gitFilesUnTracked[@]}]== $fileUnTracked"
-				gitFilesUnTracked=( ${gitFilesUnTracked[@]/"$fileUnTracked"} )
-				git rm -f --cached "$fileTracked"
-				git add "$fileUnTracked"
-				read -p "Press [Enter]"
+				[[ $(git rm --cached "$fileTracked") ]] || [[ $(git rm -f --cached "$fileTracked") ]]
 				break
 			fi
 		done
@@ -46,8 +48,8 @@ then
 	
 	echo $date>"date"
 	git add .
-	git commit -m "`date '+%Y-%m-%d %H:%M:%S'` => $userInput"
-	git push
+	#git commit -m "`date '+%Y-%m-%d %H:%M:%S'` => $userInput"
+	#git push
 	echo
 else
 	echo "There are NO changes!";

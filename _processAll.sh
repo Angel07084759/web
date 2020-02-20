@@ -135,7 +135,7 @@ then
 			if [[ "$(toLowerCase "$fileTracked")" == "$(toLowerCase "$fileUnTracked")" ]]
 			then
 				echo "$fileTracked ==[${#gitFilesTracked[@]}, ${#gitFilesUnTracked[@]}]== $fileUnTracked"
-				gitFilesUnTracked=( ${gitFilesUnTracked[@]/"$fileUnTracked"} )
+				#gitFilesUnTracked=( ${gitFilesUnTracked[@]/"$fileUnTracked"} )
 				git rm -f --cached "$fileTracked"
 				git add "$fileUnTracked"
 				#read -p "Press [Enter]"
