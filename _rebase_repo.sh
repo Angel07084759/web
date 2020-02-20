@@ -22,3 +22,5 @@ git commit -m "Initial commit"
 # push to the github remote repos ensuring you overwrite history
 git remote add origin $url
 git push -u --force origin master
+
+read -p "Press [Enter] to continue..."

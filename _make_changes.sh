@@ -2,107 +2,20 @@
 
 imageExtensions=(png jpg gif)				#tif Notsupported
 videoExtensions=(mp4 webm ogg)				#
-imagesDirectories=(images)                  #directoris and names should not contain spaces
+imagesDirectories=(imaGes)                  #directoris and names should not contain spaces
 videosDirectories=(videos)                  #
 
-#if [[ "$(git config core.ignorecase)" == "false" ]]
-git config core.ignorecase false
-hasChanged="$(git status --porcelain)"
-git config core.ignorecase true
-
-function processMediaFiles() #params: 1>rootDirectory[@] 2>fileExtensions[@]
+function toLowerCase() #USE:=$(toLowerCase "$str")
 {
-    echo "#################################" ################
-    echo $1
-    
-    if [[ -d $1 ]]
-	then
-		file="$1/$(basename -- "$1")"
-		>$file
-		git add $file
-		git mv $file tempLinksFile
-		git mv tempLinksFile $file
-    fi
-    
-    currentDir=$1
-    shift
-    extensions=($@)
-    
-	for file in "$currentDir"/* #Iterates current directory
-	do
-        fullPath=$file
-        pathOnly=$(dirname "${fullPath}")
-        fileName=$(basename -- "$fullPath")
-        fileName=${fileName%.*}
-        extension=${fullPath##*.}
-		fileNamExt=$fileName.$extension
-        newFileName=$(echo $fileName | tr -s '[:blank:]' '_')
-        newFileName=$(echo $newFileName | tr '[:punct:]' '_')
-        newFileName=$newFileName
-		newFiNamExt=$newFileName.$extension
-        newFullPath=$pathOnly/$newFiNamExt
-        
-        if [[ -d $file ]]
-		then
-            processMediaFiles $file ${extensions[@]}
-            #processMediaFiles $(checkDirName $file) ${extensions[@]}
-        elif [[ -f $file ]]
-		then
-			
-            for ext in ${extensions[@]}
-			do
-                if [[ "$ext" == "$(echo "$extension" | tr '[:upper:]' '[:lower:]')" ]]
-				then
-					
-					fileOutput=$(basename -- "$pathOnly")
-					fileOutput="$pathOnly/$fileOutput" #.txt file?
-					#txtFileOut="$pathOnly/$newFileName.txt" #Text file for the user to add data
-						
-					git add "$fullPath"
-					
-					if [[ $fullPath != $newFullPath ]]
-					then
-						git mv "$fullPath" "$newFullPath"
-						echo "$fileNamExt =>RENAMED=> $newFiNamExt"
-					else
-						tempPWD="$PWD"
-						cd "$pathOnly"
-						#git ls-files --error-unmatch "$newFiNamExt"
-						
-						for f in $(git ls-files)
-						do
-							if [[ "$(echo "$f" | tr '[:upper:]' '[:lower:]')" == "$(echo "$newFiNamExt" | tr '[:upper:]' '[:lower:]')" ]]
-							then
-								echo "$f <=?=> $newFiNamExt" ####
-								if [[ "$f" != "$newFiNamExt" ]]
-								then
-									echo "$f => $newFiNamExt" ###
-									git rm --cached "$f"
-									git add "$newFiNamExt"
-								fi
-								break
-							fi
-						done						
-						cd "$tempPWD"
-					fi                
-					echo "$newFullPath >> $fileOutput"
-					echo $newFullPath >> $fileOutput 
-					
-					#>>$txtFileOut
-					
-					break
-                fi
-			done
-        fi
-    done
+	echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 
-function checkDirName()
+function checkRootPathName() #USE:=$(checkRootPathName "$dir") #literal constant inputs
 {
 	temp=$1
 	for file in *
 	do
-		if [[ "$(echo "$file" | tr '[:upper:]' '[:lower:]')"  == "$(echo "$temp" | tr '[:upper:]' '[:lower:]')" ]]
+		if [[ "$(toLowerCase "$file")" == "$(toLowerCase "$temp")" ]]
 		then
 			temp=$file
 			break
@@ -110,6 +23,86 @@ function checkDirName()
 	done
 	echo $temp
 }
+
+function processMediaFiles() #"$1" == "" ? "*" : "$1"/*
+{	
+	arg="$1"
+	wildcard=/*
+	shift
+	extensions=($@)
+	
+	if [[ -d "$arg" ]] #if arg is a dir, create a data file with the same name
+	then
+		
+		if [[ "$arg" =~ \ |\' ]]
+		then
+			echo ">>>>>   $arg HAS SPACES >>>> $(echo $arg | tr -s '[:blank:]' '_')" #####
+			renameDir="$(echo $arg | tr -s '[:blank:]' '_')"
+			mv "$arg" "$renameDir" 
+			arg="$renameDir"
+		fi
+		
+		file="$arg/$(basename -- "$arg")"
+		[[ -f "$file" ]] && rm "$file" 
+		>"$file" 
+	fi
+	
+	
+	if [[ -z "$arg" ]]; then wildcard=*; fi
+	
+
+	for file in "$arg"$wildcard
+	do
+		if [[ -d "$file" ]]
+		then
+			pathTxt="$file/$(basename -- "$file")"
+			>"$pathTxt"
+			
+			#read -p "[$file >> $(basename -- "$file")]" ###
+			processMediaFiles "$file" ${extensions[@]}
+		else
+			#echo "=>$file [${extensions[@]}]"
+			fullPath=$file
+			pathOnly=$(dirname "${fullPath}")
+			fileName=$(basename -- "$fullPath")
+			fileName=${fileName%.*}
+			extension=${fullPath##*.}
+			fileNamExt=$fileName.$extension
+			newFileName=$(echo $fileName | tr -s '[:blank:]' '_')
+			newFileName=$(echo $newFileName | tr '[:punct:]' '_')
+			newFileName=$newFileName
+			newFiNamExt=$newFileName.$extension
+			newFullPath=$pathOnly/$newFiNamExt
+			
+			for ext in ${extensions[@]}
+			do
+                if [[ "$(toLowerCase "$ext")" == "$(toLowerCase "$extension")" ]]
+				then
+					
+					fileOutput=$(basename -- "$pathOnly")
+					fileOutput="$pathOnly/$fileOutput" #.txt file?
+					#txtFileOut="$pathOnly/$newFileName.txt" #Text file for the user to add data    
+					
+					if [[ "$(toLowerCase "$fullPath")" != "$(toLowerCase "$newFullPath")" ]]
+					then
+						mv "$fullPath" "$newFullPath"
+					fi					
+					echo "$newFullPath ==> $fileOutput"
+					echo "$newFullPath" >> "$fileOutput" 
+					#>>$txtFileOut #if exists, check name to same name
+					break
+                fi
+			done
+			
+		fi
+	done
+}
+
+########### check for files renaming #### START
+git config core.ignorecase false              #
+hasChanged="$(git status --porcelain)"        #
+git config core.ignorecase true               #
+########### check for files renaming ###### END
 
 date="`date '+%b %d, %Y; %H:%M:%S; %Z'`"
 
@@ -120,16 +113,49 @@ then
 	
 	for dir in ${imagesDirectories[@]} #*/ #array=(*/)
 	do
-		processMediaFiles $(checkDirName $dir) ${imageExtensions[@]}
+		processMediaFiles $(checkRootPathName $dir) ${imageExtensions[@]}
+	done #;read -p "Press [Enter] to continue..." ; exit; ######################## REMOVE REMOVE REMOVE REMOVE
+	########### git ls-files to array ####### START
+	gitFilesTracked=$(git ls-files)               #
+	git config core.ignorecase false              #
+	gitFilesUnTracked=$(git ls-files -o)          #
+	git config core.ignorecase true               #
+	SAVEIFS=$IFS                                  # Save current IFS
+	IFS=$'\n'                                     # Change IFS to new line
+	gitFilesTracked=($gitFilesTracked)            # split to array $names
+	gitFilesUnTracked=($gitFilesUnTracked)        # split to array $names
+	IFS=$SAVEIFS                                  # Restore IFS
+	########### git ls-files to array ######### END
+	
+	### Checking for files renaming (case sensitive) START
+	#read -p "${#gitFilesTracked[@]} ========== ${#gitFilesUnTracked[@]}" #####-----------
+	for fileTracked in "${gitFilesTracked[@]}"
+	do
+		echo "$fileTracked" ###
+		for fileUnTracked in "${gitFilesUnTracked[@]}"
+		do
+			if [[ "$(toLowerCase "$fileTracked")" == "$(toLowerCase "$fileUnTracked")" ]]
+			then
+				echo "$fileTracked ==[${#gitFilesTracked[@]}, ${#gitFilesUnTracked[@]}]== $fileUnTracked"
+				gitFilesUnTracked=( ${gitFilesUnTracked[@]/"$fileUnTracked"} )
+				git rm -f --cached "$fileTracked"
+				git add "$fileUnTracked"
+				#read -p "Press [Enter]"
+				break
+			fi
+		done
 	done
+	#read -p "${#gitFilesTracked[@]} ========== ${#gitFilesUnTracked[@]}" #####-----------
+	#git ls-files ###
+	### Checking for files renaming (case sensitive) ENDS
 	
 	echo $date>"date"
 	git add .
 	git commit -m "`date '+%Y-%m-%d %H:%M:%S'` => $userInput"
 	git push
-	
-	echo ""
-	echo "Changes Date: $date"
+	echo "###############################################"
+	echo "#  Changes Date: $date  #" 
+	echo "###############################################"
 else
 	echo "There are NO changes!";
 fi
