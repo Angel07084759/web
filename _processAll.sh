@@ -136,8 +136,8 @@ then
 			then
 				echo "$fileTracked ==[${#gitFilesTracked[@]}, ${#gitFilesUnTracked[@]}]== $fileUnTracked"
 				#gitFilesUnTracked=( ${gitFilesUnTracked[@]/"$fileUnTracked"} )
-				git rm -f --cached "$fileTracked"
-				git add "$fileUnTracked"
+				[[ $(git rm --cached "$fileTracked") ]] || [[ $(git rm -f --cached "$fileTracked") ]]
+				#git add "$fileUnTracked"
 				#read -p "Press [Enter]"
 				break
 			fi
