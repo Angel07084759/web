@@ -2,7 +2,7 @@
 
 imageExtensions=(png jpg gif)				#tif Notsupported
 videoExtensions=(mp4 webm ogg)				#
-imagesDirectories=(images)                  #directoris and names should not contain spaces
+imagesDirectories=(imaGes)                  #directoris and names should not contain spaces
 videosDirectories=(videos)                  #
 
 function toLowerCase() #USE:=$(toLowerCase "$str")
@@ -93,7 +93,6 @@ hasChanged="$(git status --porcelain)"        #
 git config core.ignorecase true               #
 ########### check for files renaming ###### END
 
-
 date="`date '+%b %d, %Y; %H:%M:%S; %Z'`"
 
 if [[ -n "$hasChanged" ]]
@@ -105,7 +104,6 @@ then
 	do
 		processMediaFiles $(checkRootPathName $dir) ${imageExtensions[@]}
 	done 
-	### TEST
 	########### git ls-files to array ####### START
 	gitFilesTracked=$(git ls-files)               #
 	git config core.ignorecase false              #
@@ -118,6 +116,7 @@ then
 	IFS=$SAVEIFS                                  # Restore IFS
 	########### git ls-files to array ######### END
 	
+	### Checking for files renaming (case sensitive) START
 	read -p "${#gitFilesTracked[@]} ========== ${#gitFilesUnTracked[@]}" #####-----------
 	for fileTracked in "${gitFilesTracked[@]}"
 	do
@@ -127,23 +126,25 @@ then
 			if [[ "$(toLowerCase "$fileTracked")" == "$(toLowerCase "$fileUnTracked")" ]]
 			then
 				echo "$fileTracked ==[${#gitFilesTracked[@]}, ${#gitFilesUnTracked[@]}]== $fileUnTracked"
-				gitFilesUnTracked=("${gitFilesUnTracked[@]/$fileUnTracked}") #---
-				git rm --cached "$fileTracked"
+				gitFilesUnTracked=( ${gitFilesUnTracked[@]/"$fileUnTracked"} )
+				git rm -f --cached "$fileTracked"
 				git add "$fileUnTracked"
+				read -p "Press [Enter]"
 				break
 			fi
 		done
 	done
-	
-	###
+	read -p "${#gitFilesTracked[@]} ========== ${#gitFilesUnTracked[@]}" #####-----------
+	#git ls-files ###
+	### Checking for files renaming (case sensitive) ENDS
 	
 	echo $date>"date"
-	#git add .
-	#git commit -m "`date '+%Y-%m-%d %H:%M:%S'` => $userInput"
-	#git push
-	
-	echo ""
-	echo "Changes Date: $date"
+	git add .
+	git commit -m "`date '+%Y-%m-%d %H:%M:%S'` => $userInput"
+	git push
+	echo "#############################################"
+	echo "# Changes Date: $date #" 
+	echo "#############################################"
 else
 	echo "There are NO changes!";
 fi
