@@ -48,9 +48,7 @@ then
 	git add .
 	git commit -m "`date '+%Y-%m-%d %H:%M:%S'` => $userInput"
 	git push
-	echo "###############################################"
-	echo "#            `date '+%Y-%m-%d %H:%M:%S'`              #"
-	echo "###############################################"
+	echo
 else
 	echo "There are NO changes!";
 fi
