@@ -46,10 +46,10 @@ then
 	
 	echo $date>"date"
 	git add .
-	git commit -m "[$date] $userInput"
+	git commit -m "`date '+%Y-%m-%d %H:%M:%S'` => $userInput"
 	git push
 	echo "###############################################"
-	echo "#  Changes Date: $date  #" 
+	echo "   `date '+%Y-%m-%d %H:%M:%S'`   #"
 	echo "###############################################"
 else
 	echo "There are NO changes!";
