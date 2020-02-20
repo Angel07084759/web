@@ -5,11 +5,11 @@ function toLowerCase() #USE:=$(toLowerCase "$str")
 }
 
 ########### check for files renaming #### START
-gitFilesTracked=$(git ls-files)               #
 git config core.ignorecase false              #
 hasChanged="$(git status --porcelain)"        #
 gitFilesUnTracked=$(git ls-files -o)          # get untracked files only
 git config core.ignorecase true               #
+gitFilesTracked=$(git ls-files)               #
 SAVEIFS=$IFS                                  # Save current IFS
 IFS=$'\n'                                     # Change IFS to new line
 gitFilesTracked=($gitFilesTracked)            # split to array $names

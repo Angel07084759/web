@@ -114,10 +114,10 @@ then
 		processMediaFiles $(checkRootPathName $dir) ${imageExtensions[@]}
 	done #;read -p "Press [Enter] to continue..." ; exit; ######################## REMOVE 
 	########### git ls-files to array ####### START
-	gitFilesTracked=$(git ls-files)               #
 	git config core.ignorecase false              #
 	gitFilesUnTracked=$(git ls-files -o)          #
 	git config core.ignorecase true               #
+	gitFilesTracked=$(git ls-files)               #
 	SAVEIFS=$IFS                                  # Save current IFS
 	IFS=$'\n'                                     # Change IFS to new line
 	gitFilesTracked=($gitFilesTracked)            # split to array $names
