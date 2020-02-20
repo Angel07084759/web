@@ -35,7 +35,7 @@ then
 				gitFilesUnTracked=( ${gitFilesUnTracked[@]/"$fileUnTracked"} )
 				git rm -f --cached "$fileTracked"
 				git add "$fileUnTracked"
-				#read -p "Press [Enter]"
+				read -p "Press [Enter]"
 				break
 			fi
 		done
