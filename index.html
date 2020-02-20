@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Bella's HD Photography</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!--Theme Color-->
+        <meta name="theme-color" content="rgba(0, 0, 0, 0.8)"> <!-- Chrome, Firefox OS and Opera -->
+        <meta name="msapplication-navbutton-color" content="rgba(0, 0, 0, 0.8)"> <!-- Windows Phone -->
+        <meta name="apple-mobile-web-app-status-bar-style" content="rgba(0, 0, 0, 0.8)"> <!-- iOS Safari -->
+        
+        
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <style> @font-face { src: url(https://angel07084759.github.io/bellashdphotography/fonts/font.ttf); font-family: veganStyle; } </style>
+        
+        <script>
+            var url = 'https://angel07084759.github.io/bellashdphotography';    
+            var logoUrl = getMediaLinks(url + '/images/logo/logo.txt')[0];
+//            var homeImgUrl = getMediaLinks(url + '/images/home_img/home_img.txt')[0];
+            var homeImgUrl = 'https://angel07084759.github.io/bellashdphotography/images/homepage.jpg';  
+            var updatedDate = getMediaLinks(url + "/date.txt");
+            document.write('<link rel="icon" href="'+logoUrl+'">');
+            
+            var minSwipePxl = 80;
+            
+            function getMediaLinks(url)
+            {
+                var fileOk = true;
+                var request = new XMLHttpRequest();
+                request.onreadystatechange = function() 
+                {
+                    fileOk = !(this.readyState == 4 && this.status != 200);
+                };
+
+                request.open('GET', url, false);//asyn=false
+                request.send(null);
+
+                if (!fileOk)
+                {
+                    return null;
+                }
+
+                var tempArray = request.responseText.split('\n');
+                var removedLine = tempArray.pop().trim();
+                if (removedLine.length > 0)
+                {
+                    tempArray.push(removedLine);
+                }
+                return tempArray;
+            }
+
+            function getMediaLinksNoExtension(url)
+            {
+                var arr = getMediaLinks(url);
+                if (arr == null)
+                {
+                    return null;
+                }
+                var tempArray = new Array();
+                var map  = new Map();
+
+                for(i = 0; i < arr.length; i++)
+                {
+                    var mediaName = arr[i].split('/').pop().split('.')[0];
+                    var temp = arr[i].substr(0, arr[i].lastIndexOf('.'));
+                    if (!map.has(mediaName))
+                    {
+                        map.set(mediaName, arr[i]);
+                        tempArray.push(temp);
+                    }
+                }
+                return tempArray;
+            }
+            function createVideo(playMode, id, clss, src, set)
+            {
+                var vSetup = '<video ' + playMode + ' id="' + id + '"' + ' class="' + clss + '" ' + set + '>';
+                vSetup += ' <source src="' + src  + '.mp4" type="video/mp4">';
+                vSetup += ' <source src="' + src  + '.webm" type="video/webm">';
+                vSetup += ' <source src="' + src  + '.ogg" type="video/ogg">';
+                vSetup += ' Your browser does not support HTML5 video.</video>';
+                return vSetup;
+            }
+            function createImage(id, clss, src, set)
+            {
+                var imgName = src.split('/').pop();
+                return '<img id="' + id + '" class="' + clss + '" src="' + src+ '" ' + set + 'alt="' + imgName+ '" > ';
+            }
+            
+            function onSwipe(id, mixPxl, callback)
+            {//REFERENCE://https://stackoverflow.com/questions/2264072/detect-a-finger-swipe-through-javascript-on-the-iphone-and-android/23230280#23230280
+                var xA = null;                                                        
+                var yA = null;
+//                console.log("onSwioe: " + id);/**/
+                document.getElementById(id).addEventListener('touchstart',function(evt) 
+                {
+                    var firstTouch = (evt.touches || evt.originalEvent.touchess)[0];                                      
+                    xA = firstTouch.clientX;                                      
+                    yA = firstTouch.clientY;
+                }, true);
+                document.getElementById(id).addEventListener('touchmove',function(evt) 
+                {
+                    var xB = evt.touches[0].clientX;                                    
+                    var yB = evt.touches[0].clientY;
+                    if ( ! xA || ! yA ) 
+                    {
+                        return;
+                    }
+                    
+                    var xAB = xA - xB;
+                    var yAB = yA - yB;
+                    var xyC = Math.sqrt((xAB*xAB) + (yAB*yAB));
+                    var swipeResult = 0;
+                    
+                    if (xyC < mixPxl)
+                    {
+                        return;
+                    }
+                    if ( Math.abs( xAB ) > Math.abs( yAB ) )
+                    {
+                        swipeResult = xAB > 0 ? 4 : 2;                      
+                    } 
+                    else 
+                    {
+                        swipeResult = yAB > 0 ? 1 : 3;                                                                
+                    }
+                    xA = yA = null;
+                    console.log("swipe: " +swipeResult);
+                    callback(swipeResult);
+                }, true);
+            }
+        </script>
+        
+        <style>
+/*            body:not(:#homeId){overflow-y: hidden}*/
+            body 
+            {
+/*                font-family: monospace;*/
+                font-family: veganStyle;
+                color: azure;
+                margin: 0;
+/*                overflow-y: hidden;*/
+            }
+            .container
+            {
+                height: 0;
+/*                bottom: 0;*/
+                overflow-y: hidden;
+                background-position: center ;
+                background-repeat: no-repeat;
+                text-align: center;
+                transition: height, 0.3s ease-in-out;
+                
+                -webkit-background-size: cover;
+                background-size: cover;
+            }
+            .center
+            {
+                height: 100vh;
+/*                width: 100%;*/
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+            }
+            .nav
+            {
+                background-color: rgba(0, 0, 0, 0.8);
+                width: 100%;
+                height: auto;
+                position: absolute;
+                display: flex;
+/*                justify-content: space-around;*/
+/*                margin: auto;*/
+            }
+            
+            
+            .bar1, .bar2, .bar3
+            {
+                width: 25px;
+                height: 4px;
+                margin-top: 4px;
+                background-color:  rgb(181, 140, 48);
+                transition: 0.3s;
+            }
+            .toggleChange .bar1
+            {
+                -webkit-transform: rotate(225deg) translate(-6px, -6px);
+                transform: rotate(225deg) translate(-6px, -6px);
+            }
+            .toggleChange .bar2
+            {
+                opacity: 0;
+            }
+            .toggleChange .bar3
+            {
+                -webkit-transform: rotate(315deg) translate(6px, -6px);
+                transform: rotate(315deg) translate(6px, -6px);
+            }
+            .menuBtns
+            {
+                background-color: rgba(0, 0, 0, 0.8);
+                position: absolute;
+                height: 0;/**/
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                font-size: 1.5rem;
+                font-weight: bold;
+                user-select: none;
+                -webkit-transition: height, 0.3s ease-in-out;
+                transition: height, 0.3s ease-in-out;
+                overflow: hidden;
+                font-family: cursive;
+                
+            }
+            .menuBtns.show
+            {
+                height: 100vh;
+            }
+            .menuBtns a
+            {
+                cursor: pointer;
+                margin: 0.5vh;
+            }
+            .menuBtnsX a:hover, .fa:hover /* , .active*/
+            {
+                color: rgb(181, 140, 48);
+            }
+            
+            .fa 
+            {
+                padding: 0.5rem;
+                font-size: 1.2rem;
+                width: 1.2rem;
+                text-align: center;
+                text-decoration: none;
+                border-radius: 50%;
+                margin: 0.3rem;
+            }
+            .fa-facebook , .fa-instagram, .fa-vimeo
+            {
+                background: black;
+                color: white;
+            }
+            
+            .homeTextShow
+            {
+                font-size: 0;
+                transition: font-size, 1s ease-in-out;
+            }
+            
+            .faArrow
+            {
+                position: absolute;
+                right: 0;
+                bottom: 50%;
+                transform: translate(0, 50%);
+                width: 50px;
+                background-color:  rgba(0, 0, 0, 0.6);
+            }
+            .fa-arrow-circle-up, .fa-arrow-circle-down
+            {
+                padding: 0;
+                font-size: 3rem;
+                
+/*                text-decoration: none;*/
+            }
+            
+            
+        </style>
+    </head>
+    <body>
+        <div class="faArrow" id="faArrowId"><!--WORKING ON--><!--WORKING ON--><!--WORKING ON-->
+<!--            <i class="fa fa-arrow-circle-up"></i>-->
+<!--            <i class="fa fa-arrow-circle-down"></i>-->
+        </div>
+         <!--################################ NAV #############################################-->
+        <div class="menuBtns" id="menuBtnsId"><!--menuBtn.count = container.count-->
+                <a class="menuBtn" onclick="onNavClick(this, 'homeId', true)" style="color: rgb(181, 140, 48);">HOME</a>
+                <a class="menuBtn" onclick="onNavClick(this, 'portfolioId', true)">PORTFOLIO</a>
+                <a class="menuBtn" onclick="onNavClick(this, 'aboutId', true)">ABOUT US</a>
+                <a class="menuBtn" onclick="onNavClick(this, 'contactId', true)">CONTACT US</a>
+            
+            <div style="position: absolute; bottom: 0; margin-bottom: 8vh;" >
+                <a href="https://m.facebook.com/Bellas-HD-Photography-191620700849912/" 
+                   class="fa fa-facebook" title="FACEBOOK"></a>
+                <a href="https://www.instagram.com/bellashdphotography/" 
+                   class="fa fa-instagram"title="INSTAGRAM"></a>
+                <a href="https://vimeo.com/369468779" class="fa fa-vimeo"title="VIMEO"></a>
+            </div>
+            <div style="position: absolute; bottom: 0; margin-bottom: 4vh; font-size: 0.8rem;" >
+                <script>
+                    document.write("Last Update: " + updatedDate);            
+                </script>
+            </div>
+        </div>
+        <!-- Homepage Title & Toggle Botton -->
+        <div class="nav" id="navId">
+<!--            <div style="width:auto; height: 4rem">-->
+                <script>
+                    document.write(createImage("logoImgId", "", logoUrl, 'style="height: 3rem;"'));
+                    document.getElementById("logoImgId").style.cursor = "pointer";
+                    document.getElementById("logoImgId").addEventListener("click", function()
+                    {
+                        onNavClick(document.getElementsByClassName("menuBtn")[0], "homeId", false);
+                    });
+                </script>
+<!--            </div>-->
+            <spam style="font-size: 1.2rem; margin: auto 0">
+                Bella's HD Photography
+            </spam>
+            
+<!--            <div></div><div></div><div></div><div></div>-->
+            <div id="toggleId" onclick="toggle(this)" style="margin: auto 4vw auto auto; cursor: pointer;">
+                <div class="bar1"></div>
+                <div class="bar2"></div>
+                <div class="bar3"></div> 
+            </div>
+        </div>
+        
+        <script>
+            var currentContainer = 0;
+            function toggle(obj) 
+            {
+                obj.classList.toggle("toggleChange");
+                var btn = document.getElementById("menuBtnsId");
+                var nav = document.getElementById("navId");
+                
+                if (btn.className === "menuBtns")
+                {
+                    btn.className += " show";
+                    nav.style.backgroundColor = "rgba(0, 0, 0, 0.4)";
+                }
+                else
+                {
+                     btn.className = "menuBtns";
+                     nav.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+                }
+            }
+            
+            function onNavClick(obj, objId, isToggle)
+            {
+                var btns = document.getElementsByClassName("menuBtn");
+                var divs = document.getElementsByClassName("container");
+                
+                for (i = 0; i < divs.length; i++)
+                {
+                    divs[i].style.height = "0";
+                }
+                for (i = 0; i < btns.length; i++)
+                {
+                    btns[i].style.color = "azure";
+                    if (btns[i] === obj)
+                    {
+                console.log( "==" + currentContainer);/**/
+                        currentContainer = i;
+                            
+                    }
+                }
+                console.log(currentContainer);/**/
+                obj.style.color = "rgb(181, 140, 48)";
+                
+                if (isToggle)
+                {
+                    toggle(document.getElementById("toggleId"));
+                }
+                var div = document.getElementById(objId);
+                
+                div.style.height ="100vh";
+                
+            }
+//            var logoImg = document.getElementById("logoImgId"); 
+//            console.log(document.getElementsByClassName("menuBtn")[0]);
+//            logoImg.addEventListener("click", onNavClick(document.getElementsByClassName("menuBtn")[0], "homeId", false));
+            
+            onSwipe("menuBtnsId", minSwipePxl, function(swipeResult)//SWIPE
+            {
+                if (swipeResult == 1)
+                {
+                    toggle(document.getElementById("toggleId"));
+                }
+            });
+            
+/*            var containers = document.getElementsByClassName("container");
+            for (i = 0; i < containers.length; i++)
+            {
+                onSwipe(containers[i].id, minSwipePxl, function(swipeResult)//SWIPE
+                {
+                    if (swipeResult == 1)
+                    {
+                        toggle(document.getElementById("toggleId"));
+                    }
+                });
+            }
+            
+            onSwipe("container", minSwipePxl, function(swipeResult)//SWIPE  obj = obj[(--currentContainer % obj.length)]
+            {
+                var obj = document.getElementsByClassName("menuBtn");
+
+                if (swipeResult == 1 || swipeResult == 3)
+                {
+                    swipeResult = swipeResult == 1 ? 1 : -1;
+                    currentContainer = (currentContainer + swipeResult) % obj.length ;
+                    
+                    currentContainer = currentContainer < 0 ? obj.length - 1 : currentContainer;
+                    onNavClick(obj[currentContainer], con[currentContainer].id, false);
+                }
+            });*/
+//            onSwipe("faArrowId", minSwipePxl, function(swipeResult)//SWIPE  obj = obj[(--currentContainer % obj.length)]
+//            {
+//                var obj = document.getElementsByClassName("menuBtn");
+//                var con = document.getElementsByClassName("container");
+//
+//                if (swipeResult == 1 || swipeResult == 3)
+//                {
+//                    swipeResult = swipeResult == 1 ? 1 : -1;
+//                    currentContainer = (currentContainer + swipeResult) % obj.length ;
+//                    
+//                    currentContainer = currentContainer < 0 ? obj.length - 1 : currentContainer;
+//                    onNavClick(obj[currentContainer], con[currentContainer].id, false);
+//                }
+//            });
+            
+        </script> 
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <!--################################ HOME ############################################-->
+<!--        <div class="container" id="homeId">-->
+        <div class="container" id="homeId" style="height: 100vh;">
+            <script>
+                document.getElementById("homeId").style.backgroundImage = 'url("' + homeImgUrl + '")';
+                onSwipe("homeId", minSwipePxl, function(swipeResult)//SWIPE
+                {
+                    var obj = document.getElementsByClassName("menuBtn");
+//                    if (swipeResult == 3)
+//                    {
+//                        currentContainer = obj.length - 1;
+//                        obj = obj[currentContainer];
+//                        onNavClick(obj, "contactId", false);
+//                    }
+                    if (swipeResult == 4 || swipeResult == 1)
+                    {
+                        obj = obj[(++currentContainer % obj.length)];
+                        onNavClick(obj, "portfolioId", false);
+                    }
+                });
+                
+            </script>
+            
+
+            <div class="center">
+<!--                <div class="center" style="height: 8vw; border: solid black">-->
+                <div class="center" style="height: 8vw;">
+                    <span class="homeTextShow">Amazing Team</span>
+                    <span class="homeTextShow">Greate Experience</span>
+                    <span class="homeTextShow">Great Strategy</span>
+                </div>
+                <div style="margin-top: 5vh">
+
+                    <a href="https://m.facebook.com/Bellas-HD-Photography-191620700849912/" class="fa fa-facebook" title="FACEBOOK"></a>
+                    <a href="https://www.instagram.com/bellashdphotography/" class="fa fa-instagram" title="INSTAGRAM"></a>
+                    <a href="https://vimeo.com/369468779" class="fa fa-vimeo" title="VIMEO"></a>
+                </div>
+                  
+<!--                <div style="font-family: monospace; font-size: 3vw; 
+                            color: darkred; font-weight: 900;
+                            height: 80px; border: solid black"><!--TEST  TEST  TEST  TEST  TEST  TEST  TEST  TEST  TEST  TEST*/-->
+                <!--script>
+                    /*TEST  TEST  TEST  TEST  TEST  TEST  TEST  TEST  TEST  TEST*/
+//                    document.write("Last Update: " + updatedDate); 
+                </script-->
+                <!--TEST  TEST  TEST  TEST  TEST  TEST  TEST  TEST  TEST  TEST-->
+<!--                </div>-->
+                
+            </div>
+            <script>
+                var textIndex = 0;
+                showHomeText();
+                function showHomeText()
+                {
+                    var i;
+                    var slides = document.getElementsByClassName("homeTextShow");
+                    for (i = 0; i < slides.length; i++) 
+                    {
+                        slides[i].style.fontSize = "0";
+                        
+                    }
+                    textIndex++;
+                    if (textIndex > slides.length) 
+                    {
+                        
+                        textIndex = 1
+                    }
+                    slides[textIndex - 1].style.fontSize = "6vw";
+                    
+                    setTimeout(showHomeText, 3000);
+                }
+            </script>
+        </div>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <!--################################ PORTFOLIO #######################################-->
+<!--        <div class="container" id="portfolioId">-->
+        <div class="container" id="portfolioId"  style="overflow-y: scroll;" onscroll="scrolled(this)">
+<!--        <div class="container" id="portfolioId"  style="height: 100vh; overflow-y: scroll;">-->
+            <script>
+                document.getElementById("portfolioId").style.backgroundImage = 'url("'+logoUrl+'")';
+                var isScroolling = true;
+                
+                function scrolled(o)
+                {                    
+                    var ceil = Math.ceil(o.offsetHeight + o.scrollTop);
+                    var floor = ceil - 1;
+//                    console.log(floor);
+//                    console.log(ceil);
+                    isScroolling = (ceil >= o.scrollHeight || floor <= o.offsetHeight)
+                    
+                    
+                }
+                onSwipe("portfolioId", minSwipePxl, function(swipeResult)//SWIPE
+                {
+                    var obj = document.getElementsByClassName("menuBtn");
+/*                    function  scrolled(o)
+                    {
+                        var ceil = Math.ceil(o.offsetHeight + o.scrollTop);
+                        var floor = ceil - 1;
+                        console.log(floor);
+                        console.log(ceil);
+                    };*/
+
+                    if (swipeResult == 3 && isScroolling)
+                    {
+                        obj = obj[(--currentContainer % obj.length)];
+                        onNavClick(obj, "homeId", false);
+                    }
+                    else if (swipeResult == 1  && isScroolling)
+                    {
+                        obj = obj[(++currentContainer % obj.length)];
+                        onNavClick(obj, "aboutId", false);
+                    }
+                });
+/*                onSwipe("portfolioId", minSwipePxl, function(swipeResult)//SWIPE
+                {
+                    var obj = document.getElementsByClassName("menuBtn");
+                    
+                    if (swipeResult == 3)
+                    {
+                        obj = obj[(--currentContainer % obj.length)];
+                        onNavClick(obj, "homeId", false);
+                    }
+                    else if (swipeResult == 1)
+                    {
+                        obj = obj[(++currentContainer % obj.length)];
+                        onNavClick(obj, "aboutId", false);
+                    }
+                });*/
+            </script>
+            <div class="center">
+                <h1>Portfolio</h1>
+                <div style="width: 80vw; height: 45vw;">
+                <script>
+                    var imgsArr = new Array();// logoUrl);
+                    imgsArr.push(logoUrl);
+                    imgsArr.push(homeImgUrl);
+                    
+                    for (i = 0; i < imgsArr.length; i++)
+                    {
+                        document.write(
+                            createImage("", "", imgsArr[i], 
+                                        'style="width=100%; height: 100%; margin 0 auto; border: solid black" '));
+                    }
+                    for (i = 0; i < imgsArr.length; i++)
+                    {
+                        document.write(
+                            createImage("", "", imgsArr[i], 
+                                        'style="width=100%; height: 100%; margin 0 auto; border: solid black" '));
+                    }
+                    for (i = 0; i < imgsArr.length; i++)
+                    {
+                        document.write(
+                            createImage("", "", imgsArr[i], 
+                                        'style="width=100%; height: 100%; margin 0 auto; border: solid black" '));
+                    }
+                    for (i = 0; i < imgsArr.length; i++)
+                    {
+                        document.write(
+                            createImage("", "", imgsArr[i], 
+                                        'style="width=100%; height: 100%; margin 0 auto; border: solid black" '));
+                    }
+                
+                </script>
+                </div>
+            </div>
+        </div>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <!--################################ ABOUT ###########################################-->
+        <div class="container" id="aboutId">
+<!--            <div class="container" id="aboutId"  style="height: 100vh;">-->
+            <script>
+                document.getElementById("aboutId").style.backgroundImage = 'url("'+homeImgUrl+'")';
+                
+                onSwipe("aboutId", minSwipePxl, function(swipeResult)//SWIPE
+                {
+                    var obj = document.getElementsByClassName("menuBtn");
+                    if (swipeResult == 3)
+                    {
+                        obj = obj[(--currentContainer % obj.length)];
+                        onNavClick(obj, "portfolioId", false);
+                    }
+                    else if (swipeResult == 1)
+                    {
+                        obj = obj[(++currentContainer % obj.length)];
+                        onNavClick(obj, "contactId", false);
+                    }
+                });
+                
+            </script>
+            <div class="center">
+                <h1>About Us</h1>
+            </div>
+        </div>
+         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <!--################################ CONATCT #########################################-->
+        <div class="container" id="contactId">
+<!--            <div class="container" id="contactId"  style="height: 100vh;">-->
+            <script>
+//                currentContainer = 3;/**/
+                document.getElementById("contactId").style.backgroundImage = 'url("'+logoUrl+'")';
+                
+                onSwipe("contactId", minSwipePxl, function(swipeResult)//SWIPE
+                {
+                    var obj = document.getElementsByClassName("menuBtn");
+                    if (swipeResult == 3)
+                    {
+                        obj = obj[(--currentContainer % obj.length)]
+                        onNavClick(obj, "aboutId", false);
+                    }
+//                    else if (swipeResult == 1)
+//                    {
+//                        
+//                        currentContainer = 0;
+//                        obj = obj[currentContainer];
+//                        onNavClick(obj, "homeId", false);
+//                    }              
+                });
+                
+            </script>
+            <div class="center">
+                <h1>Contact Us</h1>
+                <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeYFODeYa4xgfkQOiDh9nAEjW_ZOEBwxII7BD_uVVmnQQbz2w/viewform?embedded=true" width="90%" height="90%" frameborder="0" marginheight="0" marginwidth="0" >Loading…</iframe>
+            </div>
+<!--            <div class="center">
+                <h1>Contact Us</h1>
+                <iframe id="contactIframeId" onscroll="scrolledd(this)"  scrolling="auto" src="https://docs.google.com/forms/d/e/1FAIpQLSeYFODeYa4xgfkQOiDh9nAEjW_ZOEBwxII7BD_uVVmnQQbz2w/viewform?embedded=true" width="90%" height="100%" frameborder="0" marginheight="0" marginwidth="0" >Loading…</iframe>
+                <script>
+                    var iframe = document.getElementById("contactIframeId");
+//                    iframe.onscroll = scrolled(frame);
+//                        .contentDocument.addEventListener('scroll', function()
+//                    {
+//                        console.log("TEST");
+//                    }, false) 
+                    
+                    function scrolledd(o)
+                    {
+                        console.log("TEST");
+                    }
+                </script>
+                
+                </div>-->
+                
+            
+            
+<!--            <div class="center">
+                <h1>Contact Us</h1>
+                <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeYFODeYa4xgfkQOiDh9nAEjW_ZOEBwxII7BD_uVVmnQQbz2w/viewform?embedded=true" width="90%" height="90%" frameborder="0" marginheight="0" marginwidth="0" >Loading…</iframe>
+            </div>-->
+        </div>
+        
+        
+
+        
+        
+        
+        
+        
+     
+        
+        
+    </body>
+</html>
