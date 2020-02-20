@@ -36,15 +36,14 @@ function processMediaFiles() #"$1" == "" ? "*" : "$1"/*
 		
 		if [[ "$arg" =~ \ |\' ]]
 		then
-			echo ">>>>>   $arg HAS SPACES >>>> $(echo $arg | tr -s '[:blank:]' '_')" #####
+			#echo "$arg HAS SPACES >>>> $(echo $arg | tr -s '[:blank:]' '_')" #####
 			renameDir="$(echo $arg | tr -s '[:blank:]' '_')"
 			mv "$arg" "$renameDir" 
 			arg="$renameDir"
 		fi
-		
 		file="$arg/$(basename -- "$arg")"
 		[[ -f "$file" ]] && rm "$file" 
-		>"$file" 
+		>"$file"
 	fi
 	
 	
@@ -55,9 +54,8 @@ function processMediaFiles() #"$1" == "" ? "*" : "$1"/*
 	do
 		if [[ -d "$file" ]]
 		then
-			pathTxt="$file/$(basename -- "$file")"
-			>"$pathTxt"
-			
+			#pathTxt="$file/$(basename -- "$file")" #REMOVE
+			#>"$pathTxt" #REMOVE
 			#read -p "[$file >> $(basename -- "$file")]" ###
 			processMediaFiles "$file" ${extensions[@]}
 		else
